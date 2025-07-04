@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MLOps with MLflow - Complete Cheat Sheet</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 3rem;
+        margin-bottom: 10px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      .search-container {
+        position: relative;
+        margin-top: 20px;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 15px 50px 15px 20px;
+        border: 2px solid #ddd;
+        border-radius: 25px;
+        font-size: 16px;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+
+      .search-box:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .search-icon {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 20px;
+      }
+
+      .toc {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .toc h2 {
+        color: #667eea;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+      }
+
+      .toc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+      }
+
+      .toc-item {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toc-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .section:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .section h2 {
+        color: #667eea;
+        font-size: 2rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .section h3 {
+        color: #764ba2;
+        font-size: 1.4rem;
+        margin: 25px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+      }
+
+      .code-block {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 15px 0;
+        overflow-x: auto;
+        position: relative;
+        font-family: "Consolas", "Monaco", monospace;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .code-block::before {
+        content: attr(data-lang);
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: #667eea;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 80px;
+        background: #764ba2;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.3s ease;
+      }
+
+      .copy-btn:hover {
+        background: #667eea;
+        transform: scale(1.05);
+      }
+
+      .highlight {
+        background: #ffd700;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-weight: bold;
+      }
+
+      .tip {
+        background: linear-gradient(45deg, #48bb78, #38a169);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        border-left: 4px solid #2f855a;
+      }
+
+      .warning {
+        background: linear-gradient(45deg, #ed8936, #dd6b20);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        border-left: 4px solid #c05621;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+        margin: 20px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      th {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        font-weight: 600;
+      }
+
+      tr:hover {
+        background: #f8f9fa;
+      }
+
+      .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .back-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .back-to-top:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .tabs {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 5px;
+        margin: 20px 0;
+      }
+
+      .tab {
+        flex: 1;
+        padding: 15px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      .tab.active {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+      }
+
+      .tab-content {
+        display: none;
+        margin-top: 20px;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+      }
+
+      .resource-links {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .resource-link {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .resource-link:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .toc-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .section {
+          padding: 20px;
+        }
+
+        .code-block {
+          font-size: 12px;
+        }
+      }
+
+      /* Syntax highlighting */
+      .keyword {
+        color: #c792ea;
+      }
+      .string {
+        color: #c3e88d;
+      }
+      .comment {
+        color: #697098;
+      }
+      .number {
+        color: #f78c6c;
+      }
+      .function {
+        color: #82aaff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🚀 MLOps with MLflow</h1>
+        <p>Complete Cheat Sheet for Machine Learning Operations</p>
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-box"
+            placeholder="Search commands, concepts, or code snippets..."
+            id="searchBox"
+          />
+          <span class="search-icon">🔍</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <h2>📋 Quick Navigation</h2>
+        <div class="toc-grid">
+          <a href="#setup" class="toc-item">
+            <span class="icon">🛠️</span>
+            Setup & Installation
+          </a>
+          <a href="#tracking" class="toc-item">
+            <span class="icon">📊</span>
+            Experiment Tracking
+          </a>
+          <a href="#registry" class="toc-item">
+            <span class="icon">📦</span>
+            Model Registry
+          </a>
+          <a href="#deployment" class="toc-item">
+            <span class="icon">🚀</span>
+            Model Deployment
+          </a>
+          <a href="#projects" class="toc-item">
+            <span class="icon">🏗️</span>
+            MLflow Projects
+          </a>
+          <a href="#monitoring" class="toc-item">
+            <span class="icon">📈</span>
+            Model Monitoring
+          </a>
+          <a href="#cli" class="toc-item">
+            <span class="icon">💻</span>
+            CLI Commands
+          </a>
+          <a href="#api" class="toc-item">
+            <span class="icon">🐍</span>
+            Python API
+          </a>
+        </div>
+      </div>
+
+      <div class="section" id="setup">
+        <h2>🛠️ Installation & Setup</h2>
+
+        <h3>Basic Installation</h3>
+        <div class="code-block" data-lang="bash">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          # Install MLflow with essential dependencies<br />
+          pip install mlflow<br /><br />
+
+          # Install with extras for complete functionality<br />
+          pip install mlflow[extras]<br /><br />
+
+          # Install with specific ML libraries<br />
+          pip install mlflow scikit-learn pandas numpy matplotlib seaborn<br /><br />
+        </div>
+
+        <h3>Environment Setup</h3>
+        <div class="code-block" data-lang="python">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <span class="keyword">import</span> mlflow<br />
+          <span class="keyword">import</span> mlflow.sklearn<br />
+          <span class="keyword">import</span> mlflow.pyfunc<br /><br />
+
+          <span class="comment"># Set tracking URI</span>
+          mlflow.set_tracking_uri(<span class="string">"file:./mlruns"</span>)
+          <span class="comment"># Local</span><br />
+          mlflow.set_tracking_uri(<span class="string"
+            >"http://localhost:5000"</span
+          >) <span class="comment"># Remote server</span><br />
+          mlflow.set_tracking_uri(<span class="string">"databricks"</span>)
+          <span class="comment"># Databricks</span><br /><br />
+
+          <span class="comment"># Set experiment</span><br />
+          mlflow.set_experiment(<span class="string">"my_experiment"</span
+          >)<br />
+        </div>
+
+        <div class="tip">
+          <strong>💡 Pro Tip:</strong> Always set up a dedicated environment for
+          your MLflow projects to avoid dependency conflicts.
+        </div>
+      </div>
+
+      <div class="section" id="tracking">
+        <h2>📊 Experiment Tracking</h2>
+
+        <div class="tabs">
+          <button class="tab active" onclick="showTab(event, 'basic-tracking')">
+            Basic Tracking
+          </button>
+          <button class="tab" onclick="showTab(event, 'advanced-tracking')">
+            Advanced Tracking
+          </button>
+          <button class="tab" onclick="showTab(event, 'auto-logging')">
+            Auto-logging
+          </button>
+        </div>
+
+        <div id="basic-tracking" class="tab-content active">
+          <h3>Basic Experiment Logging</h3>
+          <div class="code-block" data-lang="python">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <span class="comment"># Start a run</span><br />
+            <span class="keyword">with</span> mlflow.start_run():<br /><br />
+            &nbsp;<span class="comment"># Log parameters</span><br />
+            &nbsp;mlflow.log_param(<span class="string">"learning_rate"</span>,
+            <span class="number">0.01</span>) &nbsp;mlflow.log_params({<span
+              class="string"
+              >"n_estimators"</span
+            >: <span class="number">100</span>,
+            <span class="string">"max_depth"</span>:
+            <span class="number">5</span>})<br />
+
+            &nbsp;<span class="comment"># Log metrics</span><br />
+            &nbsp;mlflow.log_metric(<span class="string">"accuracy"</span>,
+            <span class="number">0.95</span>)<br />
+            &nbsp;mlflow.log_metrics({<span class="string">"precision"</span>:
+            <span class="number">0.92</span>,
+            <span class="string">"recall"</span>:
+            <span class="number">0.88</span>})<br />
+
+            &nbsp;<span class="comment"># Log artifacts</span><br />
+            &nbsp;mlflow.log_artifact(<span class="string">"model.pkl"</span
+            >)<br />
+            &nbsp;mlflow.log_artifacts(<span class="string">"plots/"</span
+            >)<br />
+
+            &nbsp;<span class="comment"># Log model</span><br />
+            &nbsp;mlflow.sklearn.log_model(model,
+            <span class="string">"model"</span>)<br />
+          </div>
+          <br />
+        </div>
+
+        <div id="advanced-tracking" class="tab-content">
+          <h3>Advanced Experiment Tracking</h3>
+          <div class="code-block" data-lang="python">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <span class="keyword">import</span> mlflow<br /><br />
+            <span class="comment"># Named runs</span><br />
+            <span class="keyword">with</span> mlflow.start_run(run_name=<span
+              class="string"
+              >"RandomForest_v1"</span
+            >):<br />
+            &nbsp;<span class="comment"># Your training code here</span><br />
+            &nbsp;<span class="keyword">pass</span><br />
+
+            <span class="comment"># Nested runs</span><br />
+            <span class="keyword">with</span> mlflow.start_run(run_name=<span
+              class="string"
+              >"parent_run"</span
+            >):<br />
+            &nbsp;&nbsp;<span class="keyword">with</span>
+            mlflow.start_run(run_name=<span class="string">"child_run_1"</span>,
+            nested=<span class="keyword">True</span>):<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Child run code</span
+            ><br />
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">pass</span><br />
+            <span class="keyword">with</span> mlflow.start_run(run_name=<span
+              class="string"
+              >"child_run_2"</span
+            >, nested=<span class="keyword">True</span>):<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"
+              ># Another child run</span
+            ><br />
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">pass</span><br />
+          </div>
+        </div>
+
+        <div id="auto-logging" class="tab-content">
+          <h3>Auto-logging</h3>
+          <div class="code-block" data-lang="python">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <span class="comment"># Enable auto-logging for sklearn</span>
+            mlflow.sklearn.autolog()<br />
+
+            <span class="comment"
+              ># Train your model - parameters and metrics logged
+              automatically</span
+            >
+            model = RandomForestClassifier() model.fit(X_train, y_train)
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="registry">
+        <h2>📦 Model Registry</h2>
+
+        <h3>Model Registration</h3>
+        <div class="code-block" data-lang="python">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <span class="comment"># Register model from run</span>
+          model_uri =
+          <span class="string">"runs:&lt;run_id&gt;/model"</span>
+          mlflow.register_model(model_uri,
+          <span class="string">"MyModel"</span>)
+
+          <span class="comment"># Register with version description</span>
+          mlflow.register_model( model_uri=<span class="string"
+            >"runs:&lt;run_id&gt;/model"</span
+          >, name=<span class="string">"MyModel"</span>, description=<span
+            class="string"
+            >"Production model v1.0"</span
+          >
+          )
+        </div>
+
+        <h3>Model Versioning & Stages</h3>
+        <div class="code-block" data-lang="python">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <span class="keyword">from</span> mlflow.tracking
+          <span class="keyword">import</span> MlflowClient client =
+          MlflowClient()
+
+          <span class="comment"># Transition model stage</span>
+          client.transition_model_version_stage( name=<span class="string"
+            >"MyModel"</span
+          >, version=<span class="number">1</span>, stage=<span class="string"
+            >"Production"</span
+          >
+          )
+
+          <span class="comment"># Get latest version by stage</span>
+          latest_version = client.get_latest_versions(<span class="string"
+            >"MyModel"</span
+          >, stages=[<span class="string">"Production"</span>])[<span
+            class="number"
+            >0</span
+          >]
+        </div>
+
+        <div class="warning">
+          <strong>⚠️ Important:</strong> Always test models in "Staging" before
+          promoting to "Production".
+        </div>
+      </div>
+
+      <div class="section" id="deployment">
+        <h2>🚀 Model Deployment</h2>
+
+        <h3>Local Serving</h3>
+        <div class="code-block" data-lang="bash">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          # Serve model locally mlflow models serve -m
+          "models:/MyModel/Production" -p 5000 # Serve with specific host mlflow
+          models serve -m "models:/MyModel/1" -h 0.0.0.0 -p 8080 --no-conda
+        </div>
+
+        <h3>Batch Prediction</h3>
+        <div class="code-block" data-lang="python">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <span class="comment"># Load and predict</span>
+          model = mlflow.pyfunc.load_model(<span class="string"
+            >"models:/MyModel/Production"</span
+          >) predictions = model.predict(test_data)
+
+          <span class="comment"># Batch scoring</span>
+          <span class="keyword">import</span> pandas
+          <span class="keyword">as</span> pd data = pd.DataFrame({<span
+            class="string"
+            >"feature1"</span
+          >: [<span class="number">1</span>, <span class="number">2</span>],
+          <span class="string">"feature2"</span>: [<span class="number">3</span
+          >, <span class="number">4</span>]}) predictions = model.predict(data)
+        </div>
+
+        <h3>REST API Usage</h3>
+        <div class="code-block" data-lang="bash">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          # Make prediction via REST API curl -X POST -H "Content-Type:
+          application/json" \ -d '{"instances": [[1, 2, 3, 4]]}' \
+          http://localhost:5000/invocations
+        </div>
+      </div>
+
+      <div class="section" id="projects">
+        <h2>🏗️ MLflow Projects</h2>
+
+        <h3>MLproject File Structure</h3>
+        <div class="code-block" data-lang="yaml">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          name: my_ml_project python_env: python_env.yaml entry_points: main:
+          parameters: data_path: {type: str, default: "data.csv"} alpha: {type:
+          float, default: 0.1} command: "python train.py --data_path {data_path}
+          --alpha {alpha}" validate: parameters: model_path: {type: str}
+          command: "python validate.py --model_path {model_path}"
+        </div>
+
+        <h3>Running Projects</h3>
+        <div class="code-block" data-lang="bash">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          # Run project locally mlflow run . -P alpha=0.5 # Run from Git
+          repository mlflow run https://github.com/user/repo.git -P alpha=0.1 #
+          Run specific entry point mlflow run . -e validate -P
+          model_path="models:/MyModel/1"
+        </div>
+      </div>
+
+      <div class="section" id="monitoring">
+        <h2>📈 Model Monitoring</h2>
+
+        <h3>Performance Monitoring</h3>
+        <div class="code-block" data-lang="python">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <span class="comment"># Monitor model performance</span>
+          <span class="keyword">def</span>
+          <span class="function">monitor_model_performance</span>(model_name,
+          new_data, true_labels): model = mlflow.pyfunc.load_model(<span
+            class="string"
+            >f"models:/{model_name}/Production"</span
+          >) predictions = model.predict(new_data)
+
+          <span class="comment"># Calculate metrics</span>
+          accuracy = accuracy_score(true_labels, predictions)
+
+          <span class="comment"># Log monitoring metrics</span>
+          <span class="keyword">with</span> mlflow.start_run(run_name=<span
+            class="string"
+            >"monitoring"</span
+          >): mlflow.log_metric(<span class="string">"production_accuracy"</span
+          >, accuracy) mlflow.log_param(<span class="string"
+            >"monitoring_date"</span
+          >, datetime.now().isoformat())
+
+          <span class="keyword">return</span> accuracy
+        </div>
+
+        <h3>Data Drift Detection</h3>
+        <div class="code-block" data-lang="python">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <span class="comment"># Simple drift detection</span>
+          <span class="keyword">from</span> scipy.stats
+          <span class="keyword">import</span> ks_2samp
+
+          <span class="keyword">def</span>
+          <span class="function">detect_drift</span>(reference_data,
+          current_data, threshold=<span class="number">0.05</span>):
+          drift_features = []
+
+          <span class="keyword">for</span> feature
+          <span class="keyword">in</span> reference_data.columns:
+          <span class="keyword">if</span> feature
+          <span class="keyword">in</span> current_data.columns: stat, p_value =
+          ks_2samp(reference_data[feature], current_data[feature])
+          <span class="keyword">if</span> p_value < threshold:
+          drift_features.append(feature)
+
+          <span class="keyword">return</span> drift_features
+        </div>
+      </div>
+
+      <div class="section" id="cli">
+        <h2>💻 CLI Commands</h2>
+
+        <h3>MLflow UI</h3>
+        <div class="code-block" data-lang="bash">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          # Start MLflow UI mlflow ui # Specify backend store mlflow ui
+          --backend-store-uri file:./mlruns # Custom host and port mlflow ui
+          --host 0.0.0.0 --port 8080
+        </div>
+
+        <h3>Model Commands</h3>
+        <div class="code-block" data-lang="bash">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          # List registered models mlflow models list # Describe model mlflow
+          models describe --name "MyModel" # Download model mlflow models
+          download --model-uri "models:/MyModel/1" --dst ./downloaded_model
+        </div>
+      </div>
+
+      <div class="section" id="api">
+        <h2>🐍 Python API Quick Reference</h2>
+
+        <h3>Client Operations</h3>
+        <div class="code-block" data-lang="python">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <span class="keyword">from</span> mlflow.tracking
+          <span class="keyword">import</span> MlflowClient client =
+          MlflowClient()
+
+          <span class="comment"># Experiments</span>
+          experiments = client.list_experiments() experiment =
+          client.get_experiment_by_name(<span class="string"
+            >"my_experiment"</span
+          >)
+
+          <span class="comment"># Runs</span>
+          runs = client.search_runs(experiment_ids=[<span class="string"
+            >"1"</span
+          >]) run = client.get_run(<span class="string">"run_id"</span>)
+
+          <span class="comment"># Models</span>
+          models = client.list_registered_models() model_version =
+          client.get_model_version(<span class="string">"MyModel"</span>,
+          <span class="string">"1"</span>)
+        </div>
+
+        <h3>Quick Commands Summary</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Operation</th>
+                <th>Command</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Start UI</td>
+                <td><code>mlflow ui</code></td>
+              </tr>
+              <tr>
+                <td>Serve Model</td>
+                <td>
+                  <code>mlflow models serve -m models:/MyModel/Production</code>
+                </td>
+              </tr>
+              <tr>
+                <td>Run Project</td>
+                <td><code>mlflow run . -P param=value</code></td>
+              </tr>
+              <tr>
+                <td>List Models</td>
+                <td><code>mlflow models list</code></td>
+              </tr>
+              <tr>
+                <td>Start Server</td>
+                <td>
+                  <code
+                    >mlflow server --backend-store-uri sqlite:///mlflow.db</code
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Download Model</td>
+                <td>
+                  <code
+                    >mlflow models download --model-uri models:/MyModel/1</code
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>📚 Resources</h2>
+        <div class="resource-links">
+          <a
+            href="https://mlflow.org/docs/latest/"
+            class="resource-link"
+            target="_blank"
+          >
+            <div class="icon">📖</div>
+            <div>Documentation</div>
+          </a>
+          <a
+            href="https://github.com/mlflow/mlflow"
+            class="resource-link"
+            target="_blank"
+          >
+            <div class="icon">🐙</div>
+            <div>GitHub</div>
+          </a>
+          <a
+            href="https://github.com/mlflow/mlflow/tree/master/examples"
+            class="resource-link"
+            target="_blank"
+          >
+            <div class="icon">💡</div>
+            <div>ML FLow</div>
+          </a>
+          <a
+            href="https://www.databricks.com/glossary/mlflow"
+            class="resource-link"
+            target="_blank"
+          >
+            <div class="icon">📘</div>
+            <div>MLflow Glossary</div>
+          </a>
+        </div>
+      </div>
+      <button class="back-to-top" id="backToTop" onclick="scrollToTop()">
+        ↑
+      </button>
+    </div>
+
+    <script>
+      function copyCode(button) {
+
+        const codeBlock = button.previousElementSibling;
+        
+        const code = codeBlock.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          button.textContent = "Copied!";
+          setTimeout(() => {
+            button.textContent = "Copy";
+          }, 2000);
+        });
+      }
+
+      function showTab(event, tabId) {
+        const tabs = document.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(".tab-content");
+
+        tabs.forEach((tab) => tab.classList.remove("active"));
+        contents.forEach((content) => content.classList.remove("active"));
+
+        event.currentTarget.classList.add("active");
+        document.getElementById(tabId).classList.add("active");
+      }
+
+      window.onscroll = function () {
+        const backToTopButton = document.getElementById("backToTop");
+        if (
+          document.body.scrollTop > 100 ||
+          document.documentElement.scrollTop > 100
+        ) {
+          backToTopButton.classList.add("visible");
+        } else {
+          backToTopButton.classList.remove("visible");
+        }
+      };
+
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      document
+        .getElementById("searchBox")
+        .addEventListener("input", function () {
+          const query = this.value.toLowerCase();
+          const sections = document.querySelectorAll(".section");
+          sections.forEach((section) => {
+            if (section.textContent.toLowerCase().includes(query)) {
+              section.style.display = "block";
+            } else {
+              section.style.display = "none";
+            }
+          });
+        });
+    </script>
+    <footer>
+      <p style="text-align: center; color: #fff; margin-top: 20px">
+        &copy; 2025 Pratham Gujjar
+      </p>
+    </footer>
+  </body>
+</html>
+<!-- End of file: set,+get+tracking+uri.py -->
+<!-- This is the end of the cheat sheet. -->
